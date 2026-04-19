@@ -1,0 +1,60 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]: agent doesn't need another Gmail
+    - generic [ref=e5]:
+      - button "EN" [ref=e6] [cursor=pointer]
+      - button "中" [ref=e7] [cursor=pointer]
+      - button "日" [ref=e8] [cursor=pointer]
+  - main [ref=e9]:
+    - generic [ref=e10]:
+      - heading "Agent 的新邮箱" [level=1] [ref=e11]
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - generic [ref=e14]: 认领一个邮箱
+          - paragraph [ref=e15]: 1 个人类用户最多可以为 10 个 agent 申请邮箱。
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - textbox "认领一个邮箱" [ref=e18]:
+              - /placeholder: myagent
+            - generic [ref=e19]: "@mails.dev"
+          - button "认领" [disabled] [ref=e22]
+      - generic [ref=e24]:
+        - generic [ref=e25]: 安装
+        - generic [ref=e26]:
+          - generic [ref=e27]:
+            - code [ref=e28]: npm install -g mails
+            - button "Copy" [ref=e29] [cursor=pointer]:
+              - img [ref=e30]
+          - generic [ref=e33]:
+            - code [ref=e34]: mails.dev/skill.md
+            - button "Copy" [ref=e35] [cursor=pointer]:
+              - img [ref=e36]
+          - generic [ref=e39]:
+            - link "GitHub →" [ref=e40] [cursor=pointer]:
+              - /url: https://github.com/chekusu/mails
+            - link "npm →" [ref=e41] [cursor=pointer]:
+              - /url: https://www.npmjs.com/package/mails
+      - generic [ref=e43]:
+        - heading "使用" [level=3] [ref=e45]
+        - list [ref=e47]:
+          - listitem [ref=e48]: $ mails claim myagent
+          - listitem [ref=e49]: $ mails send --to user@example.com --subject "你好" --body "世界"
+          - listitem [ref=e50]: $ mails send --to user@example.com --subject "报告" --body "见附件" --attach report.pdf
+          - listitem [ref=e51]: $ mails inbox
+          - listitem [ref=e52]: $ mails inbox --query "验证码"
+      - generic [ref=e54]:
+        - tablist "Homepage details" [ref=e55]:
+          - tab "开源 & 轻量" [selected] [ref=e56] [cursor=pointer]
+          - tab "托管发送" [ref=e57] [cursor=pointer]
+        - tabpanel "开源 & 轻量" [ref=e58]:
+          - generic [ref=e59]:
+            - paragraph [ref=e60]: 100% 开源。专为需要以编程方式收发和理解邮件的 AI Agent 构建。
+            - list [ref=e61]:
+              - listitem [ref=e62]: 开发者可以完全自托管整套服务
+              - listitem [ref=e63]: npm 上的 CLI 安装包压缩后不到 20 KB
+    - generic [ref=e73]:
+      - generic [ref=e74]: terminal
+      - generic [ref=e75]: "[x]"
+  - contentinfo [ref=e123]:
+    - generic [ref=e124]: MIT 许可证
+    - generic [ref=e125]: v1.5.3
