@@ -11,6 +11,16 @@ from app.schemas.content import (
     ContentResponse,
     IndexStatusResponse,
 )
+from app.schemas.conversation import (
+    ConversationAction,
+    ConversationCreateRequest,
+    ConversationResponse,
+    IntentRecognitionRequest,
+    LLMResponse,
+    MessageCreateRequest,
+    MessageResponse,
+    SummarizeRequest,
+)
 
 __all__ = [
     # Auth
@@ -23,4 +33,13 @@ __all__ = [
     "ContentCreateRequest",
     "ContentResponse",
     "IndexStatusResponse",
+    # Conversation
+    "ConversationAction",
+    "ConversationCreateRequest",
+    "ConversationResponse",
+    "IntentRecognitionRequest",
+    "LLMResponse",
+    "MessageCreateRequest",
+    "MessageResponse",
+    "SummarizeRequest",
 ]

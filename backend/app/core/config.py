@@ -43,6 +43,13 @@ class Settings(BaseSettings):
     embedding_api_url: str = "https://api.example.com/v1/embed"
     embedding_api_key: str = ""
 
+    # LLM API 配置��大模型）
+    llm_api_url: str = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
+    llm_api_key: str = ""
+    llm_model: str = "qwen-turbo"
+    llm_temperature: float = 0.7
+    llm_max_tokens: int = 2000
+
     # 文件上传配置
     max_file_size: int = 100 * 1024 * 1024  # 100MB
     upload_dir: str = "uploads"
