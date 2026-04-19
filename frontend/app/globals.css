@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+:root {
+  /* 复古科技感配色 */
+  --color-surface: #F5F5F5;
+  --color-text: #000000;
+  --color-text-secondary: #4A4A4A;
+  --color-accent: #2C2C2C;
+  --color-border: #D4D4D4;
+  --color-code: #1A1A1A;
+
+  /* 粗体无衬线字体 */
+  --font-heading: 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: 'Helvetica Neue', Arial, sans-serif;
+  /* 等宽字体 */
+  --font-mono: 'Courier New', 'Menlo', 'Monaco', monospace;
+}
+
+@theme inline {
+  --color-background: var(--color-surface);
+  --color-foreground: var(--color-text);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-heading: var(--font-heading);
+}
+
+body {
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+/* 低饱和莫兰迪色系 */
+.text-muted {
+  color: var(--color-text-secondary);
+}
+
+.bg-card {
+  background: #EDEDED;
+}
+
+.border-tech {
+  border-color: var(--color-border);
+}
+
+/* 等宽字体用于代码 */
+.font-code {
+  font-family: var(--font-mono);
+}
