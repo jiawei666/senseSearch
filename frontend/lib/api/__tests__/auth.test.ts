@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { authService, setAccessToken, clearAccessToken, getAccessToken } from '../auth'
 import { apiClient, __resetMemoryTokenForTesting } from '../client'
 
@@ -32,63 +32,31 @@ describe('authService', () => {
 
   const mockToken = 'test-access-token'
 
-  describe('register', () => {
-    it('应该发送注册请求', async () => {
-      vi.mocked(apiClient.post).mockResolvedValueOnce(mockUser)
-
-      const result = await authService.register({
-        username: 'testuser',
-        email: 'test@example.com',
-        password: 'Password123',
-      })
-
-      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/auth/register', {
-        username: 'testuser',
-        email: 'test@example.com',
-        password: 'Password123',
-      })
-      expect(result).toEqual(mockUser)
+  describe('githubLogin', () => {
+    beforeEach(() => {
+      // 保存原始的 window.location
+      delete (window as any).location
+      window.location = { href: '' } as any
     })
 
-    it('应该处理注册错误', async () => {
-      const error = new Error('用户已存在')
-      vi.mocked(apiClient.post).mockRejectedValueOnce(error)
+    it('应该重定向到 GitHub OAuth 端点', () => {
+      const expectedUrl = 'http://localhost:8000/api/v1/auth/github'
 
-      await expect(
-        authService.register({
-          username: 'testuser',
-          email: 'test@example.com',
-          password: 'Password123',
-        })
-      ).rejects.toThrow('用户已存在')
-    })
-  })
+      authService.githubLogin()
 
-  describe('login', () => {
-    it('应该发送登录请求并保存 token', async () => {
-      vi.mocked(apiClient.post).mockResolvedValueOnce({
-        access_token: mockToken,
-        token_type: 'bearer',
-      })
-
-      const result = await authService.login('test@example.com', 'Password123')
-
-      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/auth/login', {
-        email: 'test@example.com',
-        password: 'Password123',
-      })
-      expect(result).toEqual({ accessToken: mockToken })
-      expect(getAccessToken()).toBe(mockToken)
+      expect(window.location.href).toBe(expectedUrl)
     })
 
-    it('应该处理登录错误', async () => {
-      vi.mocked(apiClient.post).mockRejectedValueOnce(
-        new Error('邮箱或密码错误')
-      )
+    it('应该使用自定义 API_BASE_URL', () => {
+      process.env.NEXT_PUBLIC_API_BASE_URL = 'https://api.example.com'
+      const expectedUrl = 'https://api.example.com/api/v1/auth/github'
 
-      await expect(
-        authService.login('test@example.com', 'wrongpassword')
-      ).rejects.toThrow('邮箱或密码错误')
+      authService.githubLogin()
+
+      expect(window.location.href).toBe(expectedUrl)
+
+      // 清理
+      delete process.env.NEXT_PUBLIC_API_BASE_URL
     })
   })
 

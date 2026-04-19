@@ -13,63 +13,17 @@ export interface User {
 }
 
 /**
- * 注册请求接口
- */
-export interface RegisterRequest {
-  username: string
-  email: string
-  password: string
-}
-
-/**
- * 登录响应接口
- */
-export interface LoginResponse {
-  accessToken: string
-}
-
-/**
  * Auth 服务
  */
 export const authService = {
   /**
-   * 用户注册
+   * GitHub OAuth 登录
+   * 重定向到后端的 GitHub OAuth 授权端点
    */
-  async register(data: RegisterRequest): Promise<User> {
-    try {
-      const response = await apiClient.post<User>('/api/v1/auth/register', data)
-      return response
-    } catch (error) {
-      if (error instanceof ApiError) {
-        throw new Error(error.data?.detail || '注册失败')
-      }
-      throw error
-    }
-  },
-
-  /**
-   * 用户登录
-   */
-  async login(email: string, password: string): Promise<LoginResponse> {
-    try {
-      const response = await apiClient.post<{
-        access_token: string
-        token_type: string
-      }>('/api/v1/auth/login', {
-        email,
-        password,
-      })
-
-      const { access_token } = response
-      setAccessToken(access_token)
-
-      return { accessToken: access_token }
-    } catch (error) {
-      if (error instanceof ApiError) {
-        throw new Error(error.data?.detail || '登录失败')
-      }
-      throw error
-    }
+  githubLogin(): void {
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
+    window.location.href = `${apiBaseUrl}/api/v1/auth/github`
   },
 
   /**

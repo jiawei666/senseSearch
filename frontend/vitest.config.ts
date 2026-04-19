@@ -14,6 +14,13 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./test/setup.ts'],
     css: true,
+    exclude: [
+      'node_modules/',
+      'dist/',
+      '**/e2e/**', // 排除 e2e 测试
+      '**/*.e2e.ts',
+      '**/*.e2e.tsx',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -23,6 +30,7 @@ export default defineConfig({
         '**/*.d.ts',
         '**/*.config.*',
         '**/middleware.ts',
+        '**/e2e/**',
       ],
     },
   },
