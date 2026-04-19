@@ -12,10 +12,11 @@ interface SelectedFile {
 interface SearchBoxProps {
   onSearch: (query: string, files?: SelectedFile[]) => void
   placeholder?: string
+  defaultValue?: string
 }
 
-export default function SearchBox({ onSearch, placeholder = '搜索内容...' }: SearchBoxProps) {
-  const [query, setQuery] = useState('')
+export default function SearchBox({ onSearch, placeholder = '搜索内容...', defaultValue = '' }: SearchBoxProps) {
+  const [query, setQuery] = useState(defaultValue)
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const imageInputRef = useRef<HTMLInputElement>(null)

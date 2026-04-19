@@ -1,28 +1,74 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import ChatBubble from '@/components/ChatBubble'
 import ContentCard from '@/components/ContentCard'
 import SearchBox from '@/components/SearchBox'
+import { searchService, type SearchResult } from '@/lib/api/search'
+
+interface ConversationMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
 
 export default function SearchContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const query = searchParams.get('q') || ''
 
-  // TODO: 对接后端 API
-  const mockResults = [
-    { id: '1', title: '人工智能基础', content: 'AI 是模拟人类智能的理论和技术...', relevance: 0.95 },
-    { id: '2', title: '机器学习入门', content: '机器学习是 AI 的一个分支...', relevance: 0.87 },
-    { id: '3', title: '深度学习原理', content: '深度学习使用神经网络...', relevance: 0.82 },
-  ]
+  const [results, setResults] = useState<SearchResult[]>([])
+  const [conversation, setConversation] = useState<ConversationMessage[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const mockConversation = [
-    { role: 'user' as const, content: query },
-    { role: 'assistant' as const, content: `找到了 ${mockResults.length} 个相关结果。` },
-  ]
+  // 当查询参数变化时执行搜索
+  useEffect(() => {
+    if (query) {
+      performSearch(query)
+    }
+  }, [query])
+
+  const performSearch = async (searchQuery: string) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await searchService.searchText({
+        query: searchQuery,
+        limit: 20,
+      })
+
+      setResults(response.results)
+
+      // 更新对话流
+      setConversation([
+        { role: 'user', content: searchQuery },
+        {
+          role: 'assistant',
+          content: `找到了 ${response.results.length} 个相关结果。`,
+        },
+      ])
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '搜索失败'
+      setError(message)
+      setConversation([
+        { role: 'user', content: searchQuery },
+        { role: 'assistant', content: `搜索出错：${message}` },
+      ])
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleSearch = (newQuery: string) => {
-    window.location.href = `/search?q=${encodeURIComponent(newQuery)}`
+    const params = new URLSearchParams(searchParams.toString())
+    if (newQuery) {
+      params.set('q', newQuery)
+    } else {
+      params.delete('q')
+    }
+    router.push(`/search?${params.toString()}`)
   }
 
   return (
@@ -30,11 +76,17 @@ export default function SearchContent() {
       {/* 左侧 AI 对话区 */}
       <div className="w-1/2 p-8 border-r-2 border-black">
         <div className="mb-6">
-          <SearchBox onSearch={handleSearch} />
+          <SearchBox onSearch={handleSearch} defaultValue={query} />
         </div>
 
         <div className="h-[calc(100vh-200px)] overflow-y-auto">
-          {mockConversation.map((msg, i) => (
+          {isLoading && (
+            <div className="text-sm text-gray-600">搜索中...</div>
+          )}
+          {error && (
+            <div className="text-sm text-red-600">{error}</div>
+          )}
+          {conversation.map((msg, i) => (
             <ChatBubble key={i} role={msg.role} content={msg.content} />
           ))}
         </div>
@@ -42,18 +94,28 @@ export default function SearchContent() {
 
       {/* 右侧结果卡片网格 */}
       <div className="w-1/2 p-8">
-        <h2 className="font-heading text-2xl mb-6">搜索结果</h2>
-        <div className="grid gap-4">
-          {mockResults.map((result) => (
-            <ContentCard
-              key={result.id}
-              id={result.id}
-              title={result.title}
-              content={result.content}
-              relevance={result.relevance}
-            />
-          ))}
-        </div>
+        <h2 className="font-heading text-2xl mb-6">
+          搜索结果 {results.length > 0 && `(${results.length})`}
+        </h2>
+        {isLoading ? (
+          <div className="text-sm text-gray-600">加载中...</div>
+        ) : results.length === 0 && query ? (
+          <div className="text-sm text-gray-600">没有找到相关结果</div>
+        ) : results.length === 0 && !query ? (
+          <div className="text-sm text-gray-400">请输入搜索关键词</div>
+        ) : (
+          <div className="grid gap-4">
+            {results.map((result) => (
+              <ContentCard
+                key={result.id}
+                id={result.id}
+                title={result.title}
+                content={result.description || '暂无描述'}
+                relevance={result.extra_metadata?.relevance as number | undefined}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
