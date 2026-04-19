@@ -1,5 +1,6 @@
 """对话管理服务 - TDD MVP 版本"""
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
