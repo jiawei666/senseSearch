@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Next.js
+.next/
+out/
+build/
+
+# Testing
+coverage/
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+
+# E2E Testing
+/playwright-report/
+/playwright/.cache/
+/test-results/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads
+uploads/
+temp/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Milvus data
+milvus_data/
+
+# Docker
+docker-compose.override.yml

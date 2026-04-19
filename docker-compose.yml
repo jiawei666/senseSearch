@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: sensesearch-postgres
+    environment:
+      POSTGRES_DB: sensesearch
+      POSTGRES_USER: sensesearch
+      POSTGRES_PASSWORD: sensesearch_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sensesearch"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sensesearch-network
+
+  # FastAPI backend
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: sensesearch-api
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+asyncpg://sensesearch:sensesearch_password@postgres:5432/sensesearch
+      SECRET_KEY: ${SECRET_KEY:-production-secret-key-change-me}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost}
+      MILVUS_HOST: ${MILVUS_HOST:-localhost}
+      MILVUS_PORT: ${MILVUS_PORT:-19530}
+      MILVUS_COLLECTION_NAME: ${MILVUS_COLLECTION_NAME:-sensesearch}
+      MAX_FILE_SIZE: ${MAX_FILE_SIZE:-104857600}
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - ./backend/uploads:/app/uploads
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - sensesearch-network
+
+  # Next.js frontend
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    container_name: sensesearch-web
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_BASE_URL: http://api:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - sensesearch-network
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: sensesearch-nginx
+    volumes:
+      - ./frontend/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx_logs:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - web
+      - api
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - sensesearch-network
+
+volumes:
+  postgres_data:
+    driver: local
+  nginx_logs:
+    driver: local
+
+networks:
+  sensesearch-network:
+    driver: bridge
