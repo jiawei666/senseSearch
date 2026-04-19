@@ -39,6 +39,10 @@ class Settings(BaseSettings):
     secret_key: str = "dev-secret-key-change-in-production"
     access_token_expire_minutes: int = 60 * 24 * 7  # 7 天
 
+    # 嵌入 API 配置
+    embedding_api_url: str = "https://api.example.com/v1/embed"
+    embedding_api_key: str = ""
+
     # 文件上传配置
     max_file_size: int = 100 * 1024 * 1024  # 100MB
     upload_dir: str = "uploads"

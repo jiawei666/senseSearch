@@ -3,6 +3,7 @@
 """
 import asyncio
 from collections.abc import AsyncGenerator
+from unittest.mock import MagicMock
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -11,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from app.main import app
 from app.models.user import User
+from app.models.content import Content
 
 # 使用内存数据库进行测试
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -21,7 +23,9 @@ async def db_engine():
     """创建测试数据库引擎"""
     engine = create_async_engine(TEST_DATABASE_URL, echo=False)
     async with engine.begin() as conn:
+        # 创建所有模型的表
         await conn.run_sync(User.metadata.create_all)
+        await conn.run_sync(Content.metadata.create_all)
 
     yield engine
 
@@ -67,6 +71,25 @@ async def client(db_engine) -> AsyncGenerator[AsyncClient, None]:
         yield ac
 
     main_app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+def mock_milvus_client():
+    """Mock Milvus 客户端 - 避免实际连接"""
+    mock_client = MagicMock()
+    mock_client.has_collection.return_value = True
+    mock_client.insert.return_value = None
+    mock_client.create_index.return_value = None
+    mock_client.create_collection.return_value = None
+    mock_client.load.return_value = None
+    mock_client.delete.return_value = None
+
+    # Mock get_milvus_client
+    from unittest.mock import patch
+
+    with patch("app.core.milvus._milvus_client", mock_client):
+        with patch("app.core.milvus.get_milvus_client", return_value=mock_client):
+            yield mock_client
 
 
 @pytest.fixture
