@@ -123,3 +123,42 @@ async def auth_token(client: AsyncClient, test_user: dict) -> str:
     assert response.status_code == 200
     data = response.json()
     return data["access_token"]
+
+
+@pytest.fixture
+async def test_user_with_token(client: AsyncClient, db_session) -> dict:
+    """创建测试用户并返回 ID 和 token"""
+    response = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "username": "uploader",
+            "email": "uploader@example.com",
+            "password": "SecurePass123!",
+        },
+    )
+    assert response.status_code == 201
+
+    # 登录获取 token
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "uploader@example.com",
+            "password": "SecurePass123!",
+        },
+    )
+    assert login_response.status_code == 200
+    login_data = login_response.json()
+
+    # 获取用户 ID
+    me_response = await client.get(
+        "/api/v1/auth/me",
+        headers={"Authorization": f"Bearer {login_data['access_token']}"},
+    )
+    me_data = me_response.json()
+
+    return {
+        "id": me_data["id"],
+        "email": "uploader@example.com",
+        "password": "SecurePass123!",
+        "token": login_data["access_token"],
+    }
