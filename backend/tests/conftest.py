@@ -3,7 +3,7 @@
 """
 import asyncio
 from collections.abc import AsyncGenerator
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from app.main import app
 from app.models.user import User
 from app.models.content import Content
+from app.services.auth import create_access_token
 
 # 使用内存数据库进行测试
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -93,72 +94,54 @@ def mock_milvus_client():
 
 
 @pytest.fixture
-async def test_user(client: AsyncClient) -> dict:
-    """创建测试用户"""
-    response = await client.post(
-        "/api/v1/auth/register",
-        json={
-            "username": "testuser",
-            "email": "testuser@example.com",
-            "password": "SecurePass123!",
-        },
+async def test_user(db_session) -> dict:
+    """创建测试用户（直接操作数据库）"""
+    from uuid import uuid4
+
+    user = User(
+        id=uuid4(),
+        github_id=12345,
+        username="testuser",
+        email="testuser@example.com",
+        avatar_url="https://avatar.example.com",
     )
-    assert response.status_code == 201
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
     return {
+        "id": str(user.id),
         "email": "testuser@example.com",
-        "password": "SecurePass123!",
+        "username": "testuser",
     }
 
 
 @pytest.fixture
-async def auth_token(client: AsyncClient, test_user: dict) -> str:
+async def auth_token(test_user: dict) -> str:
     """获取认证 token"""
-    response = await client.post(
-        "/api/v1/auth/login",
-        json={
-            "email": test_user["email"],
-            "password": test_user["password"],
-        },
-    )
-    assert response.status_code == 200
-    data = response.json()
-    return data["access_token"]
+    return create_access_token(data={"sub": test_user["id"]})
 
 
 @pytest.fixture
-async def test_user_with_token(client: AsyncClient, db_session) -> dict:
+async def test_user_with_token(db_session) -> dict:
     """创建测试用户并返回 ID 和 token"""
-    response = await client.post(
-        "/api/v1/auth/register",
-        json={
-            "username": "uploader",
-            "email": "uploader@example.com",
-            "password": "SecurePass123!",
-        },
-    )
-    assert response.status_code == 201
+    from uuid import uuid4
 
-    # 登录获取 token
-    login_response = await client.post(
-        "/api/v1/auth/login",
-        json={
-            "email": "uploader@example.com",
-            "password": "SecurePass123!",
-        },
+    user = User(
+        id=uuid4(),
+        github_id=54321,
+        username="uploader",
+        email="uploader@example.com",
+        avatar_url="https://uploader.avatar.com",
     )
-    assert login_response.status_code == 200
-    login_data = login_response.json()
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
 
-    # 获取用户 ID
-    me_response = await client.get(
-        "/api/v1/auth/me",
-        headers={"Authorization": f"Bearer {login_data['access_token']}"},
-    )
-    me_data = me_response.json()
+    token = create_access_token(data={"sub": str(user.id)})
 
     return {
-        "id": me_data["id"],
+        "id": str(user.id),
         "email": "uploader@example.com",
-        "password": "SecurePass123!",
-        "token": login_data["access_token"],
+        "username": "uploader",
+        "token": token,
     }

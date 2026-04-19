@@ -114,20 +114,24 @@ class TestMultiTurnContext:
 async def test_user(db_session):
     """创建测试用户"""
     from app.models.user import User
+    from uuid import uuid4
 
     # 创建测试用户
     test_user = User(
+        id=uuid4(),
+        github_id=99999,
         username="testuser",
         email="testuser@example.com",
-        password_hash="hashed_password",
+        avatar_url=None,
     )
     db_session.add(test_user)
     await db_session.commit()
+    await db_session.refresh(test_user)
 
     return {
         "id": str(test_user.id),
         "email": "testuser@example.com",
-        "password": "SecurePass123!",
+        "username": "testuser",
     }
 
 

@@ -1,81 +1,88 @@
 """
-认证路由 - 注册、登录、获取当前用户
+认证路由 - GitHub OAuth
 """
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import RedirectResponse
 
+from app.core.config import get_settings
 from app.core.database import get_db
 from app.deps.auth import CurrentUser
-from app.schemas.auth import (
-    LoginRequest,
-    RegisterRequest,
-    TokenResponse,
-    UserResponse,
+from app.schemas.auth import TokenResponse, UserResponse
+from app.services.auth import (
+    create_access_token,
+    exchange_github_code,
+    get_github_user_info,
 )
-from app.services.auth import create_access_token
-from app.services.user import (
-    authenticate_user,
-    create_user,
-    get_user_by_email,
-)
+from app.services.user import get_or_create_github_user
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
+settings = get_settings()
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def register(
-    data: RegisterRequest,
+@router.get("/github", status_code=status.HTTP_302_FOUND)
+async def github_auth():
+    """
+    GitHub OAuth 授权入口
+
+    重定向到 GitHub 授权页面
+    """
+    auth_url = (
+        f"https://github.com/login/oauth/authorize"
+        f"?client_id={settings.github_client_id}"
+        f"&redirect_uri={settings.github_redirect_uri}"
+        f"&scope=user:email"
+    )
+    return RedirectResponse(url=auth_url, status_code=302)
+
+
+@router.get("/github/callback", status_code=status.HTTP_302_FOUND)
+async def github_callback(
+    code: Annotated[str, Query(description="GitHub OAuth code")],
     session: Annotated[object, Depends(get_db)],
 ):
     """
-    用户注册
+    GitHub OAuth 回调处理
 
-    - **username**: 用户名 (3-50 字符)
-    - **email**: 邮箱地址
-    - **password**: 密码 (至少 8 位，包含大小写字母和数字)
+    1. 用 code 换取 access_token
+    2. 获取 GitHub 用户信息
+    3. 创建或查找本地用户
+    4. 签发 JWT 并重定向到前端
     """
+    frontend_url = "http://localhost:3000/auth/callback"
+
     try:
-        user = await create_user(
+        # 1. 换取 GitHub access_token
+        github_token = await exchange_github_code(code)
+
+        # 2. 获取 GitHub 用户信息
+        github_user = await get_github_user_info(github_token)
+
+        # 3. 创建或查找本地用户
+        user = await get_or_create_github_user(
             session,
-            username=data.username,
-            email=data.email,
-            password=data.password,
-        )
-        return UserResponse(
-            id=str(user.id),
-            username=user.username,
-            email=user.email,
-        )
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e),
+            github_id=github_user["id"],
+            username=github_user["login"],
+            email=github_user.get("email"),
+            avatar_url=github_user.get("avatar_url"),
         )
 
+        # 4. 签发 JWT
+        jwt_token = create_access_token(data={"sub": str(user.id)})
 
-@router.post("/login", response_model=TokenResponse)
-async def login(
-    data: LoginRequest,
-    session: Annotated[object, Depends(get_db)],
-):
-    """
-    用户登录
-
-    - **email**: 邮箱地址
-    - **password**: 密码
-
-    返回 JWT access token
-    """
-    user = await authenticate_user(session, data.email, data.password)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="邮箱或密码错误",
+        # 5. 重定向到前端，携带 token
+        return RedirectResponse(
+            url=f"{frontend_url}?token={jwt_token}",
+            status_code=302,
         )
 
-    access_token = create_access_token(data={"sub": str(user.id)})
-    return TokenResponse(access_token=access_token)
+    except Exception as e:
+        # 错误时重定向到前端，携带错误信息
+        return RedirectResponse(
+            url=f"{frontend_url}?error=oauth_failed",
+            status_code=302,
+        )
 
 
 @router.get("/me", response_model=UserResponse)
@@ -91,4 +98,5 @@ async def get_current_user(
         id=str(current_user.id),
         username=current_user.username,
         email=current_user.email,
+        avatar_url=current_user.avatar_url,
     )

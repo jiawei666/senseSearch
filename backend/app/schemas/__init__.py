@@ -1,11 +1,5 @@
 """Pydantic schemas"""
-from app.schemas.auth import (
-    ErrorResponse,
-    LoginRequest,
-    RegisterRequest,
-    TokenResponse,
-    UserResponse,
-)
+from app.schemas.auth import TokenResponse, UserResponse
 from app.schemas.content import (
     ContentCreateRequest,
     ContentResponse,
@@ -24,9 +18,6 @@ from app.schemas.conversation import (
 
 __all__ = [
     # Auth
-    "ErrorResponse",
-    "LoginRequest",
-    "RegisterRequest",
     "TokenResponse",
     "UserResponse",
     # Content
