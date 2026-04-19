@@ -1,19 +1,67 @@
 @import "tailwindcss";
 
 :root {
-  /* 复古科技感配色 */
+  /* === 复古科技感配色 === */
+  /* 表面色 - 浅米色背景 */
   --color-surface: #F5F5F5;
+  --color-surface-elevated: #FFFFFF;
+  --color-surface-hover: #E8E8E8;
+
+  /* 文字色 */
   --color-text: #000000;
   --color-text-secondary: #4A4A4A;
-  --color-accent: #2C2C2C;
-  --color-border: #D4D4D4;
-  --color-code: #1A1A1A;
+  --color-text-tertiary: #7A7A7A;
+  --color-text-inverted: #FFFFFF;
 
-  /* 粗体无衬线字体 */
-  --font-heading: 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
-  --font-sans: 'Helvetica Neue', Arial, sans-serif;
-  /* 等宽字体 */
-  --font-mono: 'Courier New', 'Menlo', 'Monaco', monospace;
+  /* 强调色 */
+  --color-accent: #2C2C2C;
+  --color-accent-hover: #1A1A1A;
+  --color-accent-light: #5A5A5A;
+
+  /* 边框和线条 */
+  --color-border: #D4D4D4;
+  --color-border-strong: #000000;
+  --color-border-subtle: #E5E5E5;
+
+  /* 状态色 */
+  --color-success: #4A7C59;
+  --color-warning: #B89556;
+  --color-error: #C44D48;
+  --color-info: #4A6FA5;
+
+  /* 代码颜色 */
+  --color-code-bg: #1A1A1A;
+  --color-code-text: #F5F5F5;
+
+  /* === 字体系统 === */
+  /* 粗体无衬线字体 - 标题 */
+  --font-heading: 'Arial Black', 'Helvetica Neue', 'Arial Black GTE', 'Helvetica Inserat', 'Impact', sans-serif;
+
+  /* 正文无衬线字体 */
+  --font-sans: 'Helvetica Neue', 'Helvetica', 'Arial', 'Geneva', 'sans-serif';
+
+  /* 等宽字体 - 代码和强调文本 */
+  --font-mono: 'SF Mono', 'Monaco', 'Courier New', 'Menlo', 'Consolas', monospace;
+
+  /* === 间距系统 === */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+
+  /* === 圆角系统 - 复古风格使用直角或极小圆角 === */
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+
+  /* === 阴影系统 === */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.12);
+  --shadow-retro: 4px 4px 0px rgba(0, 0, 0, 1);
 }
 
 @theme inline {
@@ -24,27 +72,236 @@
   --font-heading: var(--font-heading);
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--color-surface);
   color: var(--color-text);
   font-family: var(--font-sans);
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* 低饱和莫兰迪色系 */
+/* === 文字工具类 === */
 .text-muted {
   color: var(--color-text-secondary);
 }
 
-.bg-card {
-  background: #EDEDED;
+.text-tertiary {
+  color: var(--color-text-tertiary);
 }
 
+/* === 背景工具类 === */
+.bg-card {
+  background: var(--color-surface-elevated);
+}
+
+.bg-surface {
+  background: var(--color-surface);
+}
+
+.bg-hover {
+  background: var(--color-surface-hover);
+}
+
+/* === 边框工具类 === */
 .border-tech {
   border-color: var(--color-border);
 }
 
-/* 等宽字体用于代码 */
+.border-tech-strong {
+  border-color: var(--color-border-strong);
+}
+
+.border-tech-subtle {
+  border-color: var(--color-border-subtle);
+}
+
+/* === 字体工具类 === */
 .font-code {
   font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+}
+
+.font-title {
+  font-family: var(--font-heading);
+  letter-spacing: -0.01em;
+}
+
+/* === 复古边框效果 === */
+.retro-border {
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-none);
+}
+
+.retro-border-thin {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-none);
+}
+
+.retro-shadow {
+  box-shadow: var(--shadow-retro);
+}
+
+/* === 按钮样式 === */
+.btn-retro {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--color-accent);
+  color: var(--color-text-inverted);
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-none);
+  font-family: var(--font-heading);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.btn-retro:hover {
+  background: var(--color-accent-hover);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-retro);
+}
+
+.btn-retro:active {
+  transform: translate(0, 0);
+  box-shadow: none;
+}
+
+.btn-retro-outline {
+  background: transparent;
+  color: var(--color-text);
+}
+
+.btn-retro-outline:hover {
+  background: var(--color-surface-hover);
+}
+
+/* === 输入框样式 === */
+.input-retro {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-elevated);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-none);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.input-retro:focus {
+  outline: none;
+  border-color: var(--color-border-strong);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.input-retro::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* === 卡片样式 === */
+.card-retro {
+  background: var(--color-surface-elevated);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-none);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.card-retro:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+/* === 分隔线 === */
+.divider-retro {
+  height: 2px;
+  background: var(--color-border);
+  border: none;
+}
+
+.divider-retro-strong {
+  height: 2px;
+  background: var(--color-border-strong);
+  border: none;
+}
+
+/* === 代码块样式 === */
+.code-block {
+  background: var(--color-code-bg);
+  color: var(--color-code-text);
+  padding: var(--space-md);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  overflow-x: auto;
+}
+
+/* === 标签样式 === */
+.tag-retro {
+  display: inline-block;
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* === 链接样式 === */
+.link-retro {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  transition: color 150ms ease;
+}
+
+.link-retro:hover {
+  color: var(--color-accent);
+}
+
+/* === 滚动条样式 === */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+  border-left: 2px solid var(--color-border);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border: 2px solid var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-light);
+}
+
+/* === 选中文本样式 === */
+::selection {
+  background: var(--color-accent);
+  color: var(--color-text-inverted);
+}
+
+/* === 焦点可见性 === */
+:focus-visible {
+  outline: 2px solid var(--color-border-strong);
+  outline-offset: 2px;
 }
